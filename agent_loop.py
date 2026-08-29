@@ -1,9 +1,13 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import json
 import requests
 from tools.read_file import read_file
 from tools.write_file import write_file
 from tools.run_shell import run_shell
 from tools.list_files import list_files
+from tools.search_code import search_code
 from context_manager import get_relevant_files
 
 ENDPOINT = "http://localhost:8080/v1/chat/completions"
