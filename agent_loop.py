@@ -3,7 +3,8 @@ import requests
 from tools.read_file import read_file
 from tools.write_file import write_file
 from tools.run_shell import run_shell
-from tools.search_code import search_code
+from tools.list_files import list_files
+from context_manager import get_relevant_files
 
 ENDPOINT = "http://localhost:8080/v1/chat/completions"
 
@@ -67,6 +68,20 @@ tools = [
             }
         }
     }
+    ,{
+        "type": "function",
+        "function": {
+            "name": "list_files",
+            "description": "List all files in a directory",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "directory": {"type": "string"}
+                },
+                "required": ["directory"]
+            }
+        }
+    }
 ]
 
 # routes tool name to actual function
@@ -79,14 +94,19 @@ def execute_tool(name, args):
         return str(run_shell(**args))
     elif name == "search_code":
         return str(search_code(**args))
+    elif name == "list_files":
+        return str(list_files(**args))
     return "unknown tool"
 
 # the agent loop
 def run(task):
+    # get relevant files and inject into system prompt
+    relevant = get_relevant_files('.', task)
+    context = "\n\n".join([f"# {path}\n{content}" for path, content in relevant])
     messages = [
-        {"role": "system", "content": "You are a coding agent. Use tools to complete tasks. Always run code after writing it to verify it works."},
+        {"role": "system", "content": f"You are a coding agent. Use tools to complete tasks. Always run code after writing it to verify it works.\n\nRelevant files in this project:\n{context}"},
         {"role": "user", "content": task}
-    ]
+    ]		
 
     while True:
         response = requests.post(ENDPOINT, json={
@@ -115,4 +135,4 @@ def run(task):
             print("\nAgent:", msg["content"])
             break
 
-run("Read harness.py, understand what it does, then write a one paragraph summary to summary.txt")
+run("Use list_files tool on '.' directory, then use read_file on agent_loop.py and count how many tools are defined")
