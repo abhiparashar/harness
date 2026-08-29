@@ -31,14 +31,15 @@ harness/
 2. ✅ read_file.py + write_file.py
 3. ✅ search_code.py + list_files.py
 4. ✅ agent_loop.py — full coding agent
-5. ✅ context_manager.py — keyword-based file relevance scoring
+5. ✅ context_manager.py — BM25 ranking (28.8s avg vs 32.4s keyword, vs 22.3s no harness)
 6. ✅ evals/runner.py + evals/baseline_runner.py — measured harness impact
+7. ✅ multi-file project — CLI todo app built in 124s, self-corrected 1 bug
 
 ## Eval results
-| | No Harness | With Harness |
-|---|---|---|
-| Score | 0/5 (0%) | 5/5 (100%) |
-| Avg time | 22.3s | 32.4s |
+| | No Harness | Keyword Scoring | BM25 |
+|---|---|---|---|
+| Score | 0/5 (0%) | 5/5 (100%) | 5/5 (100%) |
+| Avg time | 22.3s | 32.4s | 28.8s |
 
 ## Known limits
 - 8192 context vs Claude Code's 200k — need smart context management
@@ -46,5 +47,6 @@ harness/
 - No multimodal in GGUF version (text + function calling only)
 
 ## Next session
-- BM25 ranking in context_manager — weight rare keywords higher for smarter file selection
-- Multi-file coding task — give agent a real project to build end to end
+- Add multi-file eval tasks to evals/tasks.py
+- Improve self-correction — detect infinite loops, limit retries
+- Add memory: persist conversation history across sessions

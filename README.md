@@ -71,19 +71,20 @@ python3 agent_loop.py
 ## What the agent can do
 
 - Write code and run it to verify
-- Self-correct errors (e.g. `python` → `python3`)
+- Self-correct errors (e.g. `python` → `python3`, missing imports)
 - Read existing files and reason about them
 - Search across a codebase
 - Fix bugs it introduces itself
+- Build multi-file projects end to end
 
 ## Eval results
 
 Same model (Gemma 4 E4B), same tasks — harness is 100% of the capability:
 
-| | No Harness (raw model) | With Harness |
-|---|---|---|
-| **Score** | 0/5 (0%) | 5/5 (100%) |
-| **Avg time per task** | 22.3s | 32.4s |
+| | No Harness | Keyword Scoring | BM25 |
+|---|---|---|---|
+| **Score** | 0/5 (0%) | 5/5 (100%) | 5/5 (100%) |
+| **Avg time per task** | 22.3s | 32.4s | 28.8s |
 
 Without a harness the model describes what it would do but cannot act — no file system access, no execution, just text.
 The extra 10s with harness is the tool execution round-trips, not model slowness.
@@ -97,7 +98,17 @@ python3 -m evals.runner
 python3 -m evals.baseline_runner
 ```
 
+## Multi-file project result
+
+Agent built a full CLI todo app (4 files) in 124s:
+- `models.py` — Todo dataclass
+- `storage.py` — JSON persistence
+- `cli.py` — add, list, done, delete logic
+- `main.py` — argparse CLI entry point
+- Hit a bug (`asdict` missing import), self-corrected, verified all commands end to end
+
 ## What is next
 
-- BM25 ranking in context_manager for smarter file selection on large codebases
-- Multi-file coding tasks end to end
+- Add more eval tasks covering multi-file projects
+- Improve self-correction — detect loops, limit retries
+- Add memory: persist conversation across sessions
