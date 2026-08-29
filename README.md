@@ -5,7 +5,7 @@ Runs on Apple Silicon via llama.cpp + Gemma 4 E4B — no cloud, no abstractions.
 
 ## What this is
 
-A minimal Claude Code-style agent: tool loop + local LLM + 4 tools.
+A minimal Claude Code-style agent: tool loop + local LLM + 5 tools.
 Built step by step to understand how harnesses actually work under the hood.
 
 ## Stack
@@ -39,6 +39,7 @@ loop until model returns final answer
 | `read_file.py` | Read any file contents |
 | `write_file.py` | Create or overwrite files |
 | `search_code.py` | Regex search across Python files |
+| `list_files.py` | List all files in a directory |
 
 ## Setup
 
@@ -73,9 +74,30 @@ python3 agent_loop.py
 - Self-correct errors (e.g. `python` → `python3`)
 - Read existing files and reason about them
 - Search across a codebase
+- Fix bugs it introduces itself
+
+## Eval results
+
+Same model (Gemma 4 E4B), same tasks — harness is 100% of the capability:
+
+| | No Harness (raw model) | With Harness |
+|---|---|---|
+| **Score** | 0/5 (0%) | 5/5 (100%) |
+| **Avg time per task** | 22.3s | 32.4s |
+
+Without a harness the model describes what it would do but cannot act — no file system access, no execution, just text.
+The extra 10s with harness is the tool execution round-trips, not model slowness.
+
+Run evals yourself:
+```bash
+# with harness
+python3 -m evals.runner
+
+# raw model, no tools
+python3 -m evals.baseline_runner
+```
 
 ## What is next
 
-- `context_manager.py` — smart file selection so large codebases fit in 8k context
-- BM25 ranking for relevant file retrieval
-- Real multi-file coding tasks end to end
+- BM25 ranking in context_manager for smarter file selection on large codebases
+- Multi-file coding tasks end to end
