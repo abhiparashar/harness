@@ -104,7 +104,7 @@ def run(task):
     relevant = get_relevant_files('.', task)
     context = "\n\n".join([f"# {path}\n{content}" for path, content in relevant])
     messages = [
-        {"role": "system", "content": f"You are a coding agent. Use tools to complete tasks. Always run code after writing it to verify it works.\n\nRelevant files in this project:\n{context}"},
+        {"role": "system", "content": f"You are a coding agent. You MUST call tools using the tool_calls mechanism. NEVER write tool calls as text or markdown. ALWAYS verify code after writing it. For Flask/server apps, verify by running 'python3 -c \"import <module>; print(OK)\"' to check syntax — never start a server directly as it will hang.\n\nRelevant files in this project:\n{context}"},
         {"role": "user", "content": task}
     ]		
 
@@ -135,4 +135,7 @@ def run(task):
             print("\nAgent:", msg["content"])
             break
 
-run("Use list_files tool on '.' directory, then use read_file on agent_loop.py and count how many tools are defined")
+if __name__ == "__main__":
+    import sys
+    task = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else input("Task: ")
+    run(task)
